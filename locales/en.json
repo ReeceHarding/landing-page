@@ -1,47 +1,47 @@
 {
   "Hero": {
-    "title1": "Ship",
-    "title2": "Landing Page",
-    "title3": "Fast",
-    "description": "A free, open-source, and powerful landing page boilerplate, ideal for various projects, enabling you to create a landing page in under an hour."
+    "title1": "Join",
+    "title2": "Early Access",
+    "title3": "Now",
+    "description": "Be the first to experience our revolutionary product. Join our exclusive waitlist and get early access to features that will transform your workflow."
   },
   "SocialProof": {
-    "maker": "makers ship fast"
+    "maker": "early adopters waiting"
   },
   "Showcase": {
     "title": "Showcase",
-    "description": "Join 1000+ Makers Boosting Conversions with Our Landing Page Boilerplate"
+    "description": "Join 1000+ innovators who are already on the waitlist"
   },
   "Feature": {
     "title": "Features"
   },
   "Pricing": {
-    "title": "Pricing",
-    "title2": "Get unlimited access.",
-    "description": "The page you are currently viewing is an open-source, free boilerplate.",
-    "doYouLike": "Do you like this landing page boilerplate?",
-    "follow": "Follow my Twitter."
+    "title": "Early Bird Pricing",
+    "title2": "Get exclusive early access pricing.",
+    "description": "Join the waitlist now to lock in special early adopter rates.",
+    "doYouLike": "Want to be part of our journey?",
+    "follow": "Follow our updates."
   },
   "Testimonials": {
-    "title": "Testimonials",
-    "description1": "If you use this landing page template and recommend it on your Twitter,",
-    "description2": "please let me know",
-    "description3": ". I will display your tweet and recommendation here."
+    "title": "Early Feedback",
+    "description1": "Here's what our early testers are saying about the experience.",
+    "description2": "Join them",
+    "description3": " and be part of our growing community."
   },
   "FAQ": {
     "title": "FAQs",
-    "description": "Here are some of the most frequently asked questions."
+    "description": "Common questions about our waitlist and early access program."
   },
   "CTA": {
-    "title": "Build Your Landing Page Now",
-    "description1": "Build",
-    "description2": "your landing page,",
-    "description3": "show",
-    "description4": "your product, and",
-    "description5": "start earning",
+    "title": "Secure Your Spot",
+    "description1": "Join",
+    "description2": "the waitlist,",
+    "description3": "get",
+    "description4": "early access, and",
+    "description5": "be first",
     "description6": "!"
   },
   "CTAButton": {
-    "title": "Get Boilerplate"
+    "title": "Join Waitlist"
   }
 }

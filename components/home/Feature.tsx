@@ -1,6 +1,8 @@
+"use client";
+
 import { ALL_FEATURES } from "@/config/feature";
+import { cn } from "@/lib/utils";
 import React from "react";
-import { RoughNotation } from "react-rough-notation";
 
 const Feature = ({
   id,
@@ -12,43 +14,67 @@ const Feature = ({
   langName: string;
 }) => {
   const FEATURES = ALL_FEATURES[`FEATURES_${langName.toUpperCase()}`];
+
   return (
     <section
       id={id}
-      className="flex flex-col justify-center lg:max-w-7xl md:max-w-5xl w-[95%] mx-auto md:gap-14 pt-16"
+      className="relative py-24 sm:py-32 border-y border-slate-200 dark:border-slate-800"
     >
-      <h2 className="text-center text-white">
-        <RoughNotation type="highlight" show={true} color="#2563EB">
-          {locale.title}
-        </RoughNotation>
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {FEATURES?.map((feature, index) => (
-          <div
-            key={feature.title}
-            className={`
-              flex flex-col items-center text-center px-8 py-6 border-b
-              ${index === 0 ? "md:border-r" : ""}
-              ${index === 1 ? "lg:border-r" : ""}
-              ${index === 2 ? "md:border-r lg:border-r-0" : ""}
-              ${index === 3 ? "lg:border-b-0 lg:border-r" : ""}
-              ${index === 4 ? "md:border-b-0 md:border-r" : ""}
-              ${index === 5 ? "border-b-0 border-r-0" : ""}
-            `}
-          >
-            <div className="p-4 w-16 h-16 dark:text-white rounded-full flex items-center justify-center">
-              {feature.icon && typeof feature.icon === "string" ? (
-                <span className="text-2xl">{feature.icon}</span>
-              ) : (
-                React.createElement(feature.icon, { className: "text-2xl" })
+      <div className="relative mx-auto max-w-[1400px] px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center mb-20">
+          <h2 className={cn(
+            "text-3xl font-bold tracking-tight sm:text-4xl mb-4",
+            "text-slate-900 dark:text-white",
+            "leading-[1.2]"
+          )}>
+            {locale.title}
+          </h2>
+          <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 tracking-[-0.01em]">
+            {locale.description}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 lg:gap-x-12">
+          {FEATURES?.map((feature) => (
+            <div
+              key={feature.title}
+              className={cn(
+                "relative group",
+                "rounded-2xl p-8",
+                "bg-white dark:bg-slate-800",
+                "border border-slate-200 dark:border-slate-700",
+                "transition-all duration-200",
+                "hover:border-slate-300 dark:hover:border-slate-600",
+                "hover:shadow-lg"
               )}
+            >
+              <div>
+                <div className={cn(
+                  "p-3.5 w-14 h-14 rounded-xl mb-6",
+                  "bg-slate-50 dark:bg-slate-700",
+                  "border border-slate-200 dark:border-slate-600",
+                  "flex items-center justify-center",
+                  "transition duration-200",
+                  "group-hover:border-slate-300 dark:group-hover:border-slate-500"
+                )}>
+                  {feature.icon && typeof feature.icon === "string" ? (
+                    <span className="text-xl text-primary">{feature.icon}</span>
+                  ) : (
+                    React.createElement(feature.icon, {
+                      className: "w-6 h-6 text-primary"
+                    })
+                  )}
+                </div>
+                <h3 className="text-lg font-semibold mb-3 text-slate-900 dark:text-white tracking-tight">
+                  {feature.title}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed tracking-[-0.01em]">
+                  {feature.content}
+                </p>
+              </div>
             </div>
-            <h2 className={"text-xl font-semibold mb-2"}>{feature.title}</h2>
-            <p className="text-slate-700 dark:text-slate-400">
-              {feature.content}
-            </p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -1,5 +1,8 @@
+"use client";
+
 import { LineText } from "@/components/LineText";
 import CTAButton from "@/components/home/CTAButton";
+import { cn } from "@/lib/utils";
 
 const Hero = ({
   locale,
@@ -11,36 +14,41 @@ const Hero = ({
   CTALocale: any;
 }) => {
   return (
-    <>
-      {/* <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{
-          duration: 0.3,
-          ease: [0, 0.71, 0.2, 1],
-          scale: {
-            type: "tween", // tween spring
-            // damping: 10, // if spring
-            // stiffness: 50, // if spring
-            // restDelta: 0.001, // if spring
-          },
-        }}
-      > */}
+    <div className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800">
       <section
         lang={langName}
-        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16 pt-16 md:pt-24 text-center"
+        className="relative mx-auto max-w-[1400px] px-6 lg:px-8 pb-24 pt-24 md:pt-28 lg:pt-32 text-center"
       >
-        <h1>
-          {locale.title1} <LineText>{locale.title2}</LineText> {locale.title3}
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-2xl tracking-tight text-slate-700 dark:text-slate-400">
-          {/* {siteConfig.description} */}
+        <div className="max-w-[840px] mx-auto">
+          <h1 className={cn(
+            "text-[2.75rem] font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl",
+            "text-slate-900 dark:text-white",
+            "leading-[1.1]"
+          )}>
+            {locale.title1}{" "}
+            <span className="relative inline-block">
+              <LineText>{locale.title2}</LineText>
+              <span className="absolute -inset-1 -skew-y-2 bg-primary/[0.07] rounded-sm" />
+            </span>{" "}
+            {locale.title3}
+          </h1>
+        </div>
+
+        <p className={cn(
+          "mx-auto mt-8 max-w-2xl",
+          "text-lg md:text-xl",
+          "text-slate-600 dark:text-slate-300",
+          "leading-relaxed",
+          "tracking-[-0.01em]"
+        )}>
           {locale.description}
         </p>
+
+        <div className="mt-12">
+          <CTAButton locale={CTALocale} />
+        </div>
       </section>
-      {/* </motion.div> */}
-      <CTAButton locale={CTALocale}></CTAButton>
-    </>
+    </div>
   );
 };
 
