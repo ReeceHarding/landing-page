@@ -1,7 +1,6 @@
 import GoogleAnalytics from "@/app/GoogleAnalytics";
 import { TailwindIndicator } from "@/components/TailwindIndicator";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import Footer from "@/components/footer/Footer";
 import Header from "@/components/header/Header";
 import { siteConfig } from "@/config/site";
 import { defaultLocale } from "@/lib/i18n";
@@ -62,7 +61,6 @@ export default async function RootLayout({
                 {children}
               </div>
             </main>
-            <Footer />
             <Analytics />
             <TailwindIndicator />
           </div>

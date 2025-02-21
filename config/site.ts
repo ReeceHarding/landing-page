@@ -32,11 +32,7 @@ const baseSiteConfig = {
     shortcut: "/favicon-16x16.png",
     apple: "/logo.png",
   },
-  headerLinks: [
-    { name: 'repo', href: OPEN_SOURCE_URL, icon: BsGithub },
-    { name: 'twitter', href: "https://twitter.com/weijunext", icon: BsTwitterX },
-    { name: 'buyMeCoffee', href: "https://www.buymeacoffee.com/weijunext", icon: SiBuymeacoffee }
-  ],
+  headerLinks: [],
   footerLinks: [
     { name: 'email', href: "mailto:weijunext@gmail.com", icon: MdEmail },
     { name: 'twitter', href: "https://twitter.com/weijunext", icon: BsTwitterX },

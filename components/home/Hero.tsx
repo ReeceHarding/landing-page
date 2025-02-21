@@ -14,10 +14,10 @@ const Hero = ({
   CTALocale: any;
 }) => {
   return (
-    <div className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800">
+    <div className="relative overflow-hidden">
       <section
         lang={langName}
-        className="relative mx-auto max-w-[1400px] px-6 lg:px-8 pb-24 pt-24 md:pt-28 lg:pt-32 text-center"
+        className="relative mx-auto max-w-[1400px] px-6 lg:px-8 pb-16 pt-12 md:pt-16 lg:pt-20 text-center"
       >
         <div className="max-w-[840px] mx-auto">
           <h1 className={cn(
@@ -35,7 +35,7 @@ const Hero = ({
         </div>
 
         <p className={cn(
-          "mx-auto mt-8 max-w-2xl",
+          "mx-auto mt-6 max-w-2xl",
           "text-lg md:text-xl",
           "text-slate-600 dark:text-slate-300",
           "leading-relaxed",
@@ -44,7 +44,7 @@ const Hero = ({
           {locale.description}
         </p>
 
-        <div className="mt-12">
+        <div className="mt-8">
           <CTAButton locale={CTALocale} />
         </div>
       </section>
