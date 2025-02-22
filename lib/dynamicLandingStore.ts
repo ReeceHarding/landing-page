@@ -42,27 +42,31 @@ export interface DynamicLandingPageContent {
 const REDIS_KEY_PREFIX = "dynamic_landing_page:";
 
 function logStoreOperation(operation: string, details: any) {
+  // Only log in development
+  if (process.env.NODE_ENV !== 'development') return;
+
   const timestamp = new Date().toISOString();
-  const sessionId = Math.random().toString(36).substring(7);
   const isServer = typeof window === 'undefined';
 
-  let memoryUsage = { heapUsed: 'N/A', heapTotal: 'N/A', rss: 'N/A' };
+  // Only log essential memory info on server
+  let memoryInfo = '';
   if (isServer && typeof process !== 'undefined' && process.memoryUsage) {
     const memory = process.memoryUsage();
-    memoryUsage = {
-      heapUsed: Math.round(memory.heapUsed / 1024 / 1024) + 'MB',
-      heapTotal: Math.round(memory.heapTotal / 1024 / 1024) + 'MB',
-      rss: Math.round(memory.rss / 1024 / 1024) + 'MB'
-    };
+    memoryInfo = `(Heap: ${Math.round(memory.heapUsed / 1024 / 1024)}MB)`;
   }
 
-  console.log(`[${timestamp}] 🏪 DynamicLandingStore Operation: ${operation}`);
-  console.log('├─ Session ID:', sessionId);
-  console.log('├─ Operation:', operation);
-  console.log('├─ Environment:', isServer ? 'server' : 'client');
-  console.log('├─ Memory Usage:', memoryUsage);
-  console.log('├─ Operation Details:', details);
-  console.log('└─ Stack Trace:', new Error().stack?.split('\n').slice(2).join('\n'));
+  // Simplified logging format
+  console.log(`[${timestamp}] DynamicStore: ${operation} ${memoryInfo}`);
+
+  // Only log details if they're essential
+  if (details?.error || details?.id || details?.hasData) {
+    console.log('Details:', {
+      id: details.id,
+      error: details.error,
+      hasData: details.hasData,
+      dataType: details.dataType
+    });
+  }
 }
 
 /**

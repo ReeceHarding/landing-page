@@ -1,8 +1,6 @@
 import { ThemeProvider } from "@/components/ThemeProvider";
-import Header from "@/components/header/Header";
 import { siteConfig } from "@/config/site";
 import { getDynamicLandingPage } from "@/lib/dynamicLandingStore";
-import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react";
 import { Inter as FontSans } from "next/font/google";
 import React from "react";
@@ -53,22 +51,14 @@ export default function DynamicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={cn(
-        "min-h-screen bg-background font-sans antialiased",
-        fontSans.variable
-      )}
-    >
+    <div className={fontSans.variable}>
       <ThemeProvider
         attribute="class"
         defaultTheme={siteConfig.nextThemeColor}
         enableSystem
       >
-        <div className="relative flex min-h-screen flex-col">
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Analytics />
-        </div>
+        {children}
+        <Analytics />
       </ThemeProvider>
     </div>
   );

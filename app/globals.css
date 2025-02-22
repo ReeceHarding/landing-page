@@ -1,0 +1,48 @@
+/* Marquee Animation */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(calc(-50%));
+  }
+}
+
+.rfm-marquee-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  pointer-events: none;
+}
+
+.rfm-marquee {
+  display: flex;
+  width: fit-content;
+  animation: scroll 20s linear infinite;
+  white-space: nowrap;
+}
+
+.rfm-marquee:hover {
+  animation-play-state: paused;
+}
+
+.rfm-marquee>div {
+  display: flex;
+  gap: 1rem;
+}
+
+.rfm-marquee img {
+  pointer-events: auto;
+}
+
+.rfm-initial-child-container {
+  display: flex;
+  min-width: max-content;
+}
+
+.rfm-child {
+  flex-shrink: 0;
+  transform: var(--transform, none);
+}
