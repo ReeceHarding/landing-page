@@ -2,10 +2,16 @@
 
 import { LineText } from "@/components/LineText";
 import CTAButton from "@/components/home/CTAButton";
+import { LOGOS } from "@/config/logos";
 import { cn } from "@/lib/utils";
+import { Accordion, AccordionItem } from "@nextui-org/react";
 import type { HTMLMotionProps } from 'framer-motion';
+import { PlusIcon } from "lucide-react";
+import { useTheme } from "next-themes";
 import dynamic from 'next/dynamic';
+import Image from "next/image";
 import { useEffect, useState } from "react";
+import Marquee from "react-fast-marquee";
 
 // Dynamically import framer-motion components with SSR disabled
 const MotionDiv = dynamic<HTMLMotionProps<"div">>(
@@ -101,11 +107,18 @@ type PageContent = {
   ctaDescription: string;
 };
 
+// Add this function before the DynamicLandingPage component
+function triggerResizeEvent() {
+  const event = new Event("resize");
+  window.dispatchEvent(event);
+}
+
 export default function DynamicLandingPage({ params }: { params: { slug: string } }) {
   const [content, setContent] = useState<PageContent | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [loadAttempts, setLoadAttempts] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const theme = useTheme().theme;
 
   useEffect(() => {
     logDynamicPage('mount', {
@@ -392,62 +405,23 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
 
         {/* Logo Scroll Section */}
         <section className="mx-auto w-full md:max-w-5xl lg:max-w-7xl px-0 md:px-6 lg:px-8 pt-16">
-          <div className="rfm-marquee-container">
-            <div className="rfm-marquee">
-              {/* First set of logos */}
-              <div className="flex">
-                {[
-                  { name: "Next.js", src: "/images/techStack/nextjs.svg" },
-                  { name: "React", src: "/images/techStack/react.svg" },
-                  { name: "Tailwind", src: "/images/techStack/tailwind.svg" },
-                  { name: "Framer", src: "/images/techStack/framer.svg" },
-                  { name: "Shadcnui", src: "/images/techStack/shadcnui.svg" },
-                  { name: "Nextui", src: "/images/techStack/nextui.svg" },
-                  { name: "TS", src: "/images/techStack/typescript.svg" },
-                  { name: "Vercel", src: "/images/techStack/vercel.svg" }
-                ].map((tech) => (
-                  <div key={tech.name} className="mx-6 text-gray-500">
-                    <img
-                      alt={tech.name}
-                      loading="lazy"
-                      width="50"
-                      height="50"
-                      decoding="async"
-                      className="filter dark:invert grayscale hover:filter-none transition-all duration-300 cursor-pointer text-gray-500"
-                      src={tech.src}
-                      style={{ color: "transparent", objectFit: "cover" }}
-                    />
-                  </div>
-                ))}
+          <Marquee direction="left" autoFill pauseOnHover>
+            {LOGOS.map((image, index) => (
+              <div className="mx-6 text-gray-500" key={index}>
+                <Image
+                  src={image.image}
+                  alt={image.name}
+                  width={50}
+                  height={50}
+                  style={{
+                    objectFit: "cover",
+                  }}
+                  className={`${theme === "dark" ? "filter dark:invert grayscale" : ""
+                    } hover:filter-none transition-all duration-300 cursor-pointer text-gray-500`}
+                />
               </div>
-              {/* Second set of logos (duplicate for seamless loop) */}
-              <div className="flex">
-                {[
-                  { name: "Next.js", src: "/images/techStack/nextjs.svg" },
-                  { name: "React", src: "/images/techStack/react.svg" },
-                  { name: "Tailwind", src: "/images/techStack/tailwind.svg" },
-                  { name: "Framer", src: "/images/techStack/framer.svg" },
-                  { name: "Shadcnui", src: "/images/techStack/shadcnui.svg" },
-                  { name: "Nextui", src: "/images/techStack/nextui.svg" },
-                  { name: "TS", src: "/images/techStack/typescript.svg" },
-                  { name: "Vercel", src: "/images/techStack/vercel.svg" }
-                ].map((tech) => (
-                  <div key={tech.name} className="mx-6 text-gray-500">
-                    <img
-                      alt={tech.name}
-                      loading="lazy"
-                      width="50"
-                      height="50"
-                      decoding="async"
-                      className="filter dark:invert grayscale hover:filter-none transition-all duration-300 cursor-pointer text-gray-500"
-                      src={tech.src}
-                      style={{ color: "transparent", objectFit: "cover" }}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+            ))}
+          </Marquee>
         </section>
 
         {/* Features Section */}
@@ -520,87 +494,52 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
                 <path d="M500.95131853508 2020.3686951984264 C625.9523830741723 2015.6112596598286, 756.1148415803212 2018.7573311831432, 878.3081867911186 2023.0770307358357" fill="none" stroke="#2563EB" strokeWidth="54.8625"></path>
                 <path d="M879.434543460471 2023.8132577096528 C728.5277241385792 2019.51829447739, 579.4511679077297 2023.7953286619093, 500.19890802542903 2024.0839656606338" fill="none" stroke="#2563EB" strokeWidth="54.8625"></path>
               </svg>
-              <span style={{ position: 'relative' }}>Early Bird Pricing</span>
+              <span style={{ position: 'relative' }}>{locale.Pricing.title}</span>
             </h2>
-            <h3 className="text-4xl font-medium tracking-tight mt-2">Get exclusive early access pricing.</h3>
-            <span aria-hidden="true" className="w-px h-px block" style={{ marginLeft: '0.25rem', marginTop: '1rem' }}></span>
-            <p className="text-large text-default-500">Join the waitlist now to lock in special early adopter rates.</p>
+            <h3 className="text-4xl font-medium tracking-tight mt-2">{locale.Pricing.description}</h3>
           </div>
           <span aria-hidden="true" className="w-px h-px block" style={{ marginLeft: '0.25rem', marginTop: '2rem' }}></span>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 justify-items-center">
-            {/* Free Tier */}
-            <div className="flex flex-col relative overflow-hidden h-auto text-foreground box-border bg-content1 outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 shadow-medium rounded-large transition-transform-background motion-reduce:transition-none p-3 flex-1 w-[90%]" tabIndex={-1}>
-              <div className="p-3 z-10 w-full justify-start shrink-0 overflow-inherit color-inherit subpixel-antialiased rounded-t-large flex flex-col items-start gap-2 pb-6">
-                <h2 className="text-large font-medium">Open-Source / Free</h2>
-                <p className="text-medium text-default-500">Freely clone the landing page boilerplate from the GitHub repository.</p>
+            {content.pricingTiers.map((tier, index) => (
+              <div key={index} className="flex flex-col relative overflow-hidden h-auto text-foreground box-border bg-content1 outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 shadow-medium rounded-large transition-transform-background motion-reduce:transition-none p-3 flex-1 w-[90%]" tabIndex={-1}>
+                <div className="p-3 z-10 w-full justify-start shrink-0 overflow-inherit color-inherit subpixel-antialiased rounded-t-large flex flex-col items-start gap-2 pb-6">
+                  <h2 className="text-large font-medium">{tier.name}</h2>
+                  <p className="text-medium text-default-500">{tier.description}</p>
+                </div>
+                <hr className="shrink-0 bg-divider border-none w-full h-divider" role="separator" />
+                <div className="relative flex w-full p-3 flex-auto flex-col place-content-inherit align-items-inherit h-auto break-words text-left overflow-y-auto subpixel-antialiased gap-8">
+                  <p className="flex items-baseline gap-1 pt-2">
+                    <span className="inline bg-gradient-to-br from-foreground to-foreground-600 bg-clip-text text-2xl font-semibold leading-7 tracking-tight text-transparent">{tier.price}</span>
+                  </p>
+                  <ul className="flex flex-col gap-2">
+                    {tier.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center gap-2">
+                        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="text-blue-500" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path>
+                        </svg>
+                        <p className="text-default-500">{feature}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="p-3 h-auto flex w-full items-center overflow-hidden color-inherit subpixel-antialiased rounded-b-large">
+                  <a
+                    className={cn(
+                      "tap-highlight-transparent no-underline hover:opacity-80 active:opacity-disabled transition-opacity z-0 group relative inline-flex items-center justify-center box-border appearance-none select-none whitespace-nowrap font-normal subpixel-antialiased overflow-hidden tap-highlight-transparent data-[pressed=true]:scale-[0.97] outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 px-4 min-w-20 h-10 text-small gap-2 rounded-medium w-full [&>svg]:max-w-[theme(spacing.8)] transition-transform-colors-opacity motion-reduce:transition-none",
+                      index === 0 ? "bg-primary text-primary-foreground" : "bg-default/40 text-default-700",
+                      "data-[hover=true]:opacity-hover"
+                    )}
+                    href="https://twitter.com/weijunext"
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    tabIndex={0}
+                    role="button"
+                  >
+                    {index === 0 ? "Get started" : "Contact us"}
+                  </a>
+                </div>
               </div>
-              <hr className="shrink-0 bg-divider border-none w-full h-divider" role="separator" />
-              <div className="relative flex w-full p-3 flex-auto flex-col place-content-inherit align-items-inherit h-auto break-words text-left overflow-y-auto subpixel-antialiased gap-8">
-                <p className="flex items-baseline gap-1 pt-2">
-                  <span className="inline bg-gradient-to-br from-foreground to-foreground-600 bg-clip-text text-2xl font-semibold leading-7 tracking-tight text-transparent">Free</span>
-                </p>
-                <ul className="flex flex-col gap-2">
-                  {['Free', 'Access to full code', 'Secondary development', 'MIT License'].map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="text-blue-500" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path>
-                      </svg>
-                      <p className="text-default-500">{feature}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="p-3 h-auto flex w-full items-center overflow-hidden color-inherit subpixel-antialiased rounded-b-large">
-                <a className="tap-highlight-transparent no-underline hover:opacity-80 active:opacity-disabled transition-opacity z-0 group relative inline-flex items-center justify-center box-border appearance-none select-none whitespace-nowrap font-normal subpixel-antialiased overflow-hidden tap-highlight-transparent data-[pressed=true]:scale-[0.97] outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 px-4 min-w-20 h-10 text-small gap-2 rounded-medium w-full [&>svg]:max-w-[theme(spacing.8)] transition-transform-colors-opacity motion-reduce:transition-none bg-primary text-primary-foreground data-[hover=true]:opacity-hover"
-                  href="https://github.com/weijunext/landing-page-boilerplate"
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  tabIndex={0}
-                  role="button">
-                  Get started
-                </a>
-              </div>
-            </div>
-
-            {/* Custom Tier */}
-            <div className="flex flex-col relative overflow-hidden h-auto text-foreground box-border bg-content1 outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 shadow-medium rounded-large transition-transform-background motion-reduce:transition-none p-3 flex-1 w-[90%]" tabIndex={-1}>
-              <div className="p-3 z-10 w-full justify-start shrink-0 overflow-inherit color-inherit subpixel-antialiased rounded-t-large flex flex-col items-start gap-2 pb-6">
-                <h2 className="text-large font-medium">Customize</h2>
-                <p className="text-medium text-default-500">Pay to customize an exclusive landing page.</p>
-              </div>
-              <hr className="shrink-0 bg-divider border-none w-full h-divider" role="separator" />
-              <div className="relative flex w-full p-3 flex-auto flex-col place-content-inherit align-items-inherit h-auto break-words text-left overflow-y-auto subpixel-antialiased gap-8">
-                <p className="flex items-baseline gap-1 pt-2">
-                  <span className="inline bg-gradient-to-br from-foreground to-foreground-600 bg-clip-text text-2xl font-semibold leading-7 tracking-tight text-transparent">$188</span>
-                </p>
-                <ul className="flex flex-col gap-2">
-                  {[
-                    'Access to full code',
-                    'Secondary development',
-                    'Exclusive style',
-                    'One-on-one service',
-                    'More exquisite pages'
-                  ].map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="text-blue-500" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path>
-                      </svg>
-                      <p className="text-default-500">{feature}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="p-3 h-auto flex w-full items-center overflow-hidden color-inherit subpixel-antialiased rounded-b-large">
-                <a className="tap-highlight-transparent no-underline hover:opacity-80 active:opacity-disabled transition-opacity z-0 group relative inline-flex items-center justify-center box-border appearance-none select-none whitespace-nowrap font-normal subpixel-antialiased overflow-hidden tap-highlight-transparent data-[pressed=true]:scale-[0.97] outline-none data-[focus-visible=true]:z-10 data-[focus-visible=true]:outline-2 data-[focus-visible=true]:outline-focus data-[focus-visible=true]:outline-offset-2 px-4 min-w-20 h-10 text-small gap-2 rounded-medium w-full [&>svg]:max-w-[theme(spacing.8)] transition-transform-colors-opacity motion-reduce:transition-none bg-default/40 text-default-700 data-[hover=true]:opacity-hover"
-                  href="https://twitter.com/weijunext"
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  tabIndex={0}
-                  role="button">
-                  Contact us
-                </a>
-              </div>
-            </div>
+            ))}
           </div>
           <span aria-hidden="true" className="w-px h-px block" style={{ marginLeft: '0.25rem', marginTop: '3rem' }}></span>
           <div className="flex py-2">
@@ -680,47 +619,50 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
         </section>
 
         {/* FAQ Section */}
-        <section id="FAQ" className="relative py-24 sm:py-32">
-          <div className="relative mx-auto max-w-[1400px] px-6 lg:px-8">
-            <div className="mx-auto max-w-2xl text-center mb-20">
-              <h2 className={cn(
-                "text-3xl font-bold tracking-tight sm:text-4xl mb-4",
-                "text-slate-900 dark:text-white",
-                "leading-[1.2]"
-              )}>
-                {locale.FAQ.title}
-              </h2>
-              <p className="mt-4 text-lg text-slate-600 dark:text-slate-300 tracking-[-0.01em]">
-                {locale.FAQ.description}
-              </p>
-            </div>
-
-            <div className="mx-auto max-w-3xl">
-              <div className="space-y-8">
-                {content.faqs.map((faq: FAQ) => (
-                  <div
-                    key={faq.question}
-                    className={cn(
-                      "relative group",
-                      "rounded-2xl p-8",
-                      "bg-white dark:bg-slate-800",
-                      "border border-slate-200 dark:border-slate-700",
-                      "transition-all duration-200",
-                      "hover:border-slate-300 dark:hover:border-slate-600",
-                      "hover:shadow-lg"
-                    )}
-                  >
-                    <h3 className="text-lg font-semibold mb-3 text-slate-900 dark:text-white">
-                      {faq.question}
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed tracking-[-0.01em]">
-                      {faq.answer}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <section id="FAQ" className="flex flex-col justify-center max-w-[88%] items-center py-16 gap-12">
+          <div className="flex flex-col text-center gap-4">
+            <h2 className="text-center text-white">
+              <svg className="rough-annotation" style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                overflow: 'visible',
+                pointerEvents: 'none',
+                width: '100px',
+                height: '100px'
+              }}>
+                <path d="M635.9189517404884 4226.918683866039 C665.365622190453 4222.601116102402, 692.6526151349244 4225.013907056515, 749.135999372229 4231.056165615097" fill="none" stroke="#2563EB" strokeWidth="54.8625"></path>
+                <path d="M745.6793110761791 4221.255426993594 C725.1019628202746 4222.5870503321885, 683.6374475874414 4231.863240434289, 629.6434434447438 4229.857739975676" fill="none" stroke="#2563EB" strokeWidth="54.8625"></path>
+              </svg>
+              <span style={{ position: 'relative' }}>{locale.FAQ.title}</span>
+            </h2>
+            <p className="text-large text-default-500">{locale.FAQ.description}</p>
           </div>
+          <Accordion
+            fullWidth
+            keepContentMounted
+            className="gap-3"
+            itemClasses={{
+              base: "px-6 !bg-default-100 !shadow-none hover:!bg-default-200/50",
+              title: "font-medium",
+              trigger: "py-6",
+              content: "pt-0 pb-6 text-base text-default-500",
+            }}
+            selectionMode="multiple"
+            variant="splitted"
+            onSelectionChange={triggerResizeEvent}
+          >
+            {content.faqs.map((faq: FAQ) => (
+              <AccordionItem
+                key={faq.question}
+                indicator={<PlusIcon />}
+                title={faq.question}
+                HeadingComponent="h3"
+              >
+                {faq.answer}
+              </AccordionItem>
+            ))}
+          </Accordion>
         </section>
 
         {/* CTA Section */}
