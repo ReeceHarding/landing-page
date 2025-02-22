@@ -1,27 +1,30 @@
 "use client";
 import HeaderLinks from "@/components/header/HeaderLinks";
 import { LangSwitcher } from "@/components/header/LangSwitcher";
+import { MotionDiv } from "@/components/ui/motion";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { MenuIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CgClose } from "react-icons/cg";
 import { ThemedButton } from "../ThemedButton";
 
 const links = [
-  { label: "Features", href: "#Features" },
-  { label: "Pricing", href: "#Pricing" },
-  { label: "Testimonials", href: "#Testimonials" },
-  { label: "FAQ", href: "#FAQ" },
+  { label: "Features", href: "#Features", isAnchor: true },
+  { label: "Pricing", href: "#Pricing", isAnchor: true },
+  { label: "Testimonials", href: "#Testimonials", isAnchor: true },
+  { label: "FAQ", href: "#FAQ", isAnchor: true },
+  { label: "Generator", href: "/generator", isAnchor: false },
 ];
 
-const Header = () => {
+export const Header = () => {
   const params = useParams();
   const lang = params.lang;
+  const pathname = usePathname();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,8 +39,10 @@ const Header = () => {
 
   return (
     <header className={cn(
-      "sticky top-0 z-50 w-full transition-all duration-300",
-      isScrolled ? "bg-background/80 backdrop-blur-lg shadow-sm" : "bg-transparent"
+      "sticky top-0 z-50",
+      "bg-white/80 dark:bg-slate-900/80",
+      "backdrop-blur-xl",
+      "border-b border-slate-200 dark:border-slate-800"
     )}>
       <div className="py-4 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <nav className="relative z-50 flex justify-between items-center">
@@ -67,10 +72,13 @@ const Header = () => {
             {links.map((link) => (
               <li key={link.label}>
                 <Link
-                  href={`/${lang === "en" ? "" : lang}${link.href}`}
+                  href={link.isAnchor ? `/${lang === "en" || !lang ? "" : lang}${link.href}` : link.href}
                   aria-label={link.label}
                   title={link.label}
-                  className="tracking-wide transition-all duration-200 font-medium hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
+                  className={cn(
+                    "tracking-wide transition-all duration-200 font-medium hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full",
+                    pathname === link.href && "bg-slate-100 dark:bg-slate-800"
+                  )}
                 >
                   {link.label}
                 </Link>
@@ -97,7 +105,7 @@ const Header = () => {
             </button>
             <AnimatePresence>
               {isMenuOpen && (
-                <motion.div
+                <MotionDiv
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
@@ -110,7 +118,7 @@ const Header = () => {
                         {links.map((link) => (
                           <li key={link.label}>
                             <Link
-                              href={link.href}
+                              href={link.isAnchor ? link.href : link.href}
                               aria-label={link.label}
                               title={link.label}
                               className="font-medium tracking-wide transition-all duration-200 hover:text-primary block py-2"
@@ -132,7 +140,7 @@ const Header = () => {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </MotionDiv>
               )}
             </AnimatePresence>
           </div>

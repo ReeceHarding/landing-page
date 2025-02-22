@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { HTMLMotionProps, motion, Variants } from "framer-motion"
+import dynamic from 'next/dynamic'
 
 interface AnimatedProps extends HTMLMotionProps<"div"> {
   children: React.ReactNode
@@ -15,6 +16,12 @@ const defaultTransition = {
   damping: 20,
   mass: 1
 }
+
+// Dynamically import motion components with SSR disabled
+export const MotionDiv = dynamic<HTMLMotionProps<"div">>(
+  () => import('framer-motion').then((mod) => mod.motion.div),
+  { ssr: false }
+)
 
 export const FadeIn = ({ children, className, delay = 0, ...props }: AnimatedProps) => (
   <motion.div
@@ -185,6 +192,25 @@ export const scrollReveal: Variants = {
       stiffness: 100,
       damping: 20,
       mass: 1
+    }
+  }
+}
+
+// Export motion variants and other utilities
+export const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 }
+}
+
+export const slideUp = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1 }
+}
+
+export const stagger = {
+  visible: {
+    transition: {
+      staggerChildren: 0.1
     }
   }
 } 
