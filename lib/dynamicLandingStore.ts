@@ -10,7 +10,11 @@ export interface DynamicLandingPageContent {
   heroTitle: string[];
   heroDescription: string;
   featuresTitle: string;
-  features: string[];
+  features: {
+    title: string;
+    content: string;
+    icon: string;
+  }[];
   pricingTitle: string;
   pricingDescription: string;
   pricingTiers: {
@@ -24,6 +28,7 @@ export interface DynamicLandingPageContent {
     name: string;
     role: string;
     content: string;
+    avatar: string | null;
   }[];
   faqTitle: string;
   faqs: {
@@ -39,17 +44,23 @@ const REDIS_KEY_PREFIX = "dynamic_landing_page:";
 function logStoreOperation(operation: string, details: any) {
   const timestamp = new Date().toISOString();
   const sessionId = Math.random().toString(36).substring(7);
-  const memoryUsage = process.memoryUsage();
+  const isServer = typeof window === 'undefined';
+
+  let memoryUsage = { heapUsed: 'N/A', heapTotal: 'N/A', rss: 'N/A' };
+  if (isServer && typeof process !== 'undefined' && process.memoryUsage) {
+    const memory = process.memoryUsage();
+    memoryUsage = {
+      heapUsed: Math.round(memory.heapUsed / 1024 / 1024) + 'MB',
+      heapTotal: Math.round(memory.heapTotal / 1024 / 1024) + 'MB',
+      rss: Math.round(memory.rss / 1024 / 1024) + 'MB'
+    };
+  }
 
   console.log(`[${timestamp}] 🏪 DynamicLandingStore Operation: ${operation}`);
   console.log('├─ Session ID:', sessionId);
   console.log('├─ Operation:', operation);
-  console.log('├─ Environment:', typeof window === 'undefined' ? 'server' : 'client');
-  console.log('├─ Memory Usage:', {
-    heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + 'MB',
-    heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + 'MB',
-    rss: Math.round(memoryUsage.rss / 1024 / 1024) + 'MB'
-  });
+  console.log('├─ Environment:', isServer ? 'server' : 'client');
+  console.log('├─ Memory Usage:', memoryUsage);
   console.log('├─ Operation Details:', details);
   console.log('└─ Stack Trace:', new Error().stack?.split('\n').slice(2).join('\n'));
 }
@@ -242,17 +253,41 @@ export async function createDynamicLandingPage(payload: Omit<DynamicLandingPageC
  */
 export async function getDynamicLandingPage(id: string): Promise<DynamicLandingPageContent | undefined> {
   const startTime = Date.now();
+  const requestId = Math.random().toString(36).substring(7);
 
   logStoreOperation("getDynamicLandingPage:init", {
     id,
+    requestId,
     timestamp: startTime,
-    redisKey: `${REDIS_KEY_PREFIX}${id}`
+    redisKey: `${REDIS_KEY_PREFIX}${id}`,
+    environment: typeof window === 'undefined' ? 'server' : 'client'
   });
 
   try {
     const fetchStartTime = Date.now();
-    const rawData = await redis.get(`${REDIS_KEY_PREFIX}${id}`);
+    const redisKey = `${REDIS_KEY_PREFIX}${id}`;
+
+    logStoreOperation("getDynamicLandingPage:pre-fetch", {
+      id,
+      requestId,
+      redisKey,
+      timeSinceStart: Date.now() - startTime
+    });
+
+    const rawData = await redis.get(redisKey);
     const fetchEndTime = Date.now();
+
+    // Log raw Redis response
+    logStoreOperation("getDynamicLandingPage:redis-response", {
+      id,
+      requestId,
+      hasData: Boolean(rawData),
+      dataType: typeof rawData,
+      responseTime: fetchEndTime - fetchStartTime,
+      rawDataPreview: rawData ?
+        (typeof rawData === 'string' ? rawData.slice(0, 100) : JSON.stringify(rawData).slice(0, 100)) + '...'
+        : null
+    });
 
     // Enhanced raw data validation
     const rawDataValidation = {

@@ -1,24 +1,38 @@
-import { match } from "@formatjs/intl-localematcher";
 import Negotiator from "negotiator";
 
+/**
+ * i18n configuration
+ */
+
 export const locales = ["", "en", "en-US", "zh", "zh-CN", "zh-TW", 'zh-HK', 'ja', "ar", "es", "ru"];
+
 export const localeNames: any = {
   en: "🇺🇸 English",
+  "en-US": "🇺🇸 English (US)",
   zh: "🇨🇳 中文",
+  "zh-CN": "🇨🇳 简体中文",
+  "zh-TW": "🇹🇼 繁體中文",
+  "zh-HK": "🇭🇰 繁體中文",
   ja: "🇯🇵 日本語",
   ar: "🇸🇦 العربية",
   es: "🇪🇸 Español",
   ru: "🇷🇺 Русский",
 };
+
 export const defaultLocale = "en";
 
 // If you wish to automatically redirect users to a URL that matches their browser's language setting,
-// you can use the `getLocale` to get the browser's language.
-export function getLocale(headers: any): string {
-  let languages = new Negotiator({ headers }).languages();
-
-  return match(languages, locales, defaultLocale);
+// you can use the following code:
+export function getLocaleFromHeaders(headers: Headers): string {
+  const negotiator = new Negotiator({ headers: Object.fromEntries(headers.entries()) });
+  return negotiator.language(locales) || defaultLocale;
 }
+
+export type Locale = typeof locales[number];
+
+export const isValidLocale = (locale: string): locale is Locale => {
+  return locales.includes(locale as Locale);
+};
 
 const dictionaries: any = {
   en: () => import("@/locales/en.json").then((module) => module.default),

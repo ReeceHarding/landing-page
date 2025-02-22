@@ -205,15 +205,46 @@ Key guidelines:
               }, null, 2)}`);
 
               // Ensure consistent data structure regardless of GPT's response format
-              const heroTitle = Array.isArray(content.heroTitle) ? content.heroTitle :
+              let heroTitle = Array.isArray(content.heroTitle) ? content.heroTitle :
                 Array.isArray(content.hero?.heroTitle) ? content.hero.heroTitle :
                   Array.isArray(content.Hero?.heroTitle) ? content.Hero.heroTitle :
-                    ["Build", "Launch", "Scale"];
+                    Array.isArray(content.heroSection?.heroTitle) ? content.heroSection.heroTitle :
+                      ["Build", "Launch", "Scale"];
+
+              // If heroTitle is a single item with dots, split it
+              if (heroTitle.length === 1 && heroTitle[0].includes(".")) {
+                heroTitle = heroTitle[0].split(".").map((part: string) => part.trim()).filter((part: string) => part);
+              }
+
+              // Ensure exactly 3 items
+              if (heroTitle.length < 3) {
+                heroTitle = [...heroTitle, ...["Build", "Launch", "Scale"].slice(heroTitle.length)];
+              }
+              heroTitle = heroTitle.slice(0, 3);
 
               const features = Array.isArray(content.features) ? content.features :
-                Array.isArray(content.hero?.features) ? content.hero.features :
+                Array.isArray(content.features?.features) ? content.features.features :
                   Array.isArray(content.Features?.features) ? content.Features.features :
-                    [];
+                    Array.isArray(content.featuresSection?.features) ? content.featuresSection.features :
+                      [];
+
+              const pricingTiers = Array.isArray(content.pricingTiers) ? content.pricingTiers :
+                Array.isArray(content.pricing?.pricingTiers) ? content.pricing.pricingTiers :
+                  Array.isArray(content.Pricing?.pricingTiers) ? content.Pricing.pricingTiers :
+                    Array.isArray(content.pricingSection?.pricingTiers) ? content.pricingSection.pricingTiers :
+                      [];
+
+              const testimonials = Array.isArray(content.testimonials) ? content.testimonials :
+                Array.isArray(content.testimonials?.testimonials) ? content.testimonials.testimonials :
+                  Array.isArray(content.Testimonials?.testimonials) ? content.Testimonials.testimonials :
+                    Array.isArray(content.testimonialsSection?.testimonials) ? content.testimonialsSection.testimonials :
+                      [];
+
+              const faqs = Array.isArray(content.faqs) ? content.faqs :
+                Array.isArray(content.faq?.faqs) ? content.faq.faqs :
+                  Array.isArray(content.FAQ?.faqs) ? content.FAQ.faqs :
+                    Array.isArray(content.faqSection?.faqs) ? content.faqSection.faqs :
+                      [];
 
               // Log normalized data
               pushLog(`Normalized data: ${JSON.stringify({
@@ -221,30 +252,17 @@ Key guidelines:
                 features,
                 heroTitleSource: Array.isArray(content.heroTitle) ? 'direct' :
                   Array.isArray(content.hero?.heroTitle) ? 'nested-lower' :
-                    Array.isArray(content.Hero?.heroTitle) ? 'nested-upper' : 'default',
+                    Array.isArray(content.Hero?.heroTitle) ? 'nested-upper' :
+                      Array.isArray(content.heroSection?.heroTitle) ? 'nested-lower' : 'default',
                 featuresSource: Array.isArray(content.features) ? 'direct' :
-                  Array.isArray(content.hero?.features) ? 'nested-lower' :
-                    Array.isArray(content.Features?.features) ? 'nested-upper' : 'default'
+                  Array.isArray(content.features?.features) ? 'nested-lower' :
+                    Array.isArray(content.Features?.features) ? 'nested-upper' :
+                      Array.isArray(content.featuresSection?.features) ? 'nested-lower' : 'default'
               }, null, 2)}`);
-
-              const pricingTiers = Array.isArray(content.pricingTiers) ? content.pricingTiers :
-                Array.isArray(content.pricing?.tiers) ? content.pricing.tiers :
-                  Array.isArray(content.Pricing?.tiers) ? content.Pricing.tiers :
-                    [];
-
-              const testimonials = Array.isArray(content.testimonials) ? content.testimonials :
-                Array.isArray(content.testimonials?.items) ? content.testimonials.items :
-                  Array.isArray(content.Testimonials?.items) ? content.Testimonials.items :
-                    [];
-
-              const faqs = Array.isArray(content.faqs) ? content.faqs :
-                Array.isArray(content.faq?.items) ? content.faq.items :
-                  Array.isArray(content.FAQ?.items) ? content.FAQ.items :
-                    [];
 
               // Normalize all content with strict typing
               const normalizedContent = {
-                heroTitle: heroTitle.slice(0, 3),  // Ensure exactly 3 items
+                heroTitle,  // Already normalized above
                 heroDescription: String(
                   content.heroDescription ||
                   content.hero?.heroDescription ||
@@ -252,29 +270,71 @@ Key guidelines:
                   content.heroSection?.heroDescription ||
                   ""
                 ),
-                featuresTitle: String(content.featuresTitle || content.hero?.featuresTitle || content.Features?.title || "Features"),
+                featuresTitle: String(
+                  content.featuresTitle ||
+                  content.features?.featuresTitle ||
+                  content.Features?.title ||
+                  content.featuresSection?.featuresTitle ||
+                  "Features"
+                ),
                 features: features.map((f: string) => String(f)),
-                pricingTitle: String(content.pricingTitle || content.pricing?.title || content.Pricing?.title || "Pricing"),
-                pricingDescription: String(content.pricingDescription || content.pricing?.description || content.Pricing?.description || ""),
+                pricingTitle: String(
+                  content.pricingTitle ||
+                  content.pricing?.pricingTitle ||
+                  content.Pricing?.title ||
+                  content.pricingSection?.pricingTitle ||
+                  "Pricing"
+                ),
+                pricingDescription: String(
+                  content.pricingDescription ||
+                  content.pricing?.pricingDescription ||
+                  content.Pricing?.description ||
+                  content.pricingSection?.pricingDescription ||
+                  ""
+                ),
                 pricingTiers: pricingTiers.map((tier: PricingTier) => ({
                   name: String(tier.name),
                   price: String(tier.price),
                   description: String(tier.description),
                   features: Array.isArray(tier.features) ? tier.features.map((f: string) => String(f)) : []
                 })),
-                testimonialsTitle: String(content.testimonialsTitle || content.testimonials?.title || content.Testimonials?.title || "Testimonials"),
+                testimonialsTitle: String(
+                  content.testimonialsTitle ||
+                  content.testimonials?.testimonialsTitle ||
+                  content.Testimonials?.title ||
+                  content.testimonialsSection?.testimonialsTitle ||
+                  "Testimonials"
+                ),
                 testimonials: testimonials.map((t: Testimonial) => ({
                   name: String(t.name),
                   role: String(t.role),
                   content: String(t.content).trim()
                 })),
-                faqTitle: String(content.faqTitle || content.faq?.title || content.FAQ?.title || "FAQ"),
+                faqTitle: String(
+                  content.faqTitle ||
+                  content.faq?.faqTitle ||
+                  content.FAQ?.title ||
+                  content.faqSection?.faqTitle ||
+                  "FAQ"
+                ),
                 faqs: faqs.map((faq: FAQ) => ({
                   question: String(faq.question).trim(),
                   answer: String(faq.answer).trim()
                 })),
-                ctaTitle: String(content.ctaTitle || content.cta?.title || content.CTA?.title || "Get Started"),
-                ctaDescription: String(content.ctaDescription || content.cta?.description || content.CTA?.description || "Join us today!")
+                ctaTitle: String(
+                  content.ctaTitle ||
+                  content.cta?.ctaTitle ||
+                  content.CTA?.title ||
+                  content.ctaSection?.ctaTitle ||
+                  "Get Started"
+                ),
+                ctaDescription: String(
+                  content.ctaDescription ||
+                  content.cta?.ctaDescription ||
+                  content.CTA?.description ||
+                  content.ctaSection?.ctaDescription ||
+                  "Join us today!"
+                )
               };
 
               pushLog("Creating record in preview store...");
@@ -304,18 +364,25 @@ Key guidelines:
               });
 
               pushLog("Creating record in dynamic store...");
-              // Create dynamic record with plain features
+              // Create dynamic record with enhanced features to match preview
               const dynamicRecord = await createDynamicLandingPage({
                 logoUrl: null,
                 heroTitle: normalizedContent.heroTitle,
                 heroDescription: normalizedContent.heroDescription,
                 featuresTitle: normalizedContent.featuresTitle,
-                features: normalizedContent.features,
+                features: normalizedContent.features.map((feature: string, index: number) => ({
+                  title: feature,
+                  content: `Leverage the power of ${feature.toLowerCase()} to transform your business.`,
+                  icon: FEATURE_ICONS[index % FEATURE_ICONS.length],
+                })),
                 pricingTitle: normalizedContent.pricingTitle,
                 pricingDescription: normalizedContent.pricingDescription,
                 pricingTiers: normalizedContent.pricingTiers,
                 testimonialsTitle: normalizedContent.testimonialsTitle,
-                testimonials: normalizedContent.testimonials,
+                testimonials: normalizedContent.testimonials.map((t: Testimonial) => ({
+                  ...t,
+                  avatar: null
+                })),
                 faqTitle: normalizedContent.faqTitle,
                 faqs: normalizedContent.faqs,
                 ctaTitle: normalizedContent.ctaTitle,

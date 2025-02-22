@@ -21,6 +21,9 @@ export function encoder(data: string): Uint8Array {
  */
 export function streamChatCompletion(messages: ChatCompletionMessageParam[], onLog?: (msg: string) => void): ReadableStream {
   let accumulatedText = "";
+  let keepAliveInterval: NodeJS.Timeout | null = null;
+  let isStreamActive = true;
+
   return new ReadableStream({
     async start(controller) {
       if (!OPENAI_API_KEY) {
@@ -28,6 +31,15 @@ export function streamChatCompletion(messages: ChatCompletionMessageParam[], onL
         controller.close();
         return;
       }
+
+      const cleanup = () => {
+        if (keepAliveInterval) {
+          clearInterval(keepAliveInterval);
+          keepAliveInterval = null;
+        }
+        isStreamActive = false;
+      };
+
       try {
         onLog?.("Initiating streaming fetch to OpenAI...");
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -47,6 +59,7 @@ export function streamChatCompletion(messages: ChatCompletionMessageParam[], onL
         if (!response.ok) {
           const errorText = await response.text();
           onLog?.(`OpenAI error. Status: ${response.status}, body: ${errorText}`);
+          cleanup();
           controller.close();
           return;
         }
@@ -54,13 +67,21 @@ export function streamChatCompletion(messages: ChatCompletionMessageParam[], onL
         const reader = response.body?.getReader();
         if (!reader) {
           onLog?.("No reader available from OpenAI response.");
+          cleanup();
           controller.close();
           return;
         }
 
-        // Keep-alive pings
-        const keepAlive = setInterval(() => {
-          controller.enqueue(encoder("data: [ping]\n\n"));
+        // Keep-alive pings with proper cleanup
+        keepAliveInterval = setInterval(() => {
+          if (isStreamActive) {
+            try {
+              controller.enqueue(encoder("data: [ping]\n\n"));
+            } catch (err) {
+              onLog?.("Keep-alive ping failed, cleaning up...");
+              cleanup();
+            }
+          }
         }, 15000);
 
         const decoder = new TextDecoder("utf-8");
@@ -122,17 +143,23 @@ export function streamChatCompletion(messages: ChatCompletionMessageParam[], onL
             }
           }
         }
-        clearInterval(keepAlive);
+        cleanup();
         onLog?.("Completed reading from OpenAI. Closing stream...");
         controller.close();
 
       } catch (err: any) {
         onLog?.("Error streaming from OpenAI: " + err.message);
+        cleanup();
         controller.close();
       }
     },
     cancel() {
       onLog?.("Stream canceled by client or server.");
+      if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
+        keepAliveInterval = null;
+      }
+      isStreamActive = false;
     },
   });
 } 
