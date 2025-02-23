@@ -112,9 +112,6 @@ function triggerResizeEvent() {
   window.dispatchEvent(event);
 }
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
-
 export default function DynamicLandingPage({ params }: { params: { slug: string } }) {
   // Add useEffect for injecting styles
   useEffect(() => {
@@ -175,29 +172,13 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
       });
 
       try {
-        // Add retry delay if this is a retry attempt
-        if (loadAttempts > 0) {
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * loadAttempts));
-        }
-
         logDynamicPage('loadContent:fetching', {
           slug: params.slug,
           attempt: loadAttempts + 1,
           timestamp: Date.now()
         });
 
-        const response = await fetch(`/api/dynamic-lp/${params.slug}`, {
-          // Add cache control headers
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        const response = await fetch(`/api/dynamic-lp/${params.slug}`);
         const data = await response.json();
 
         logDynamicPage('loadContent:response', {
@@ -210,8 +191,46 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
           attempt: loadAttempts + 1
         });
 
+        if (!response.ok) {
+          const errorMessage = data.error || `Failed to fetch content (${response.status})`;
+          logDynamicPage('loadContent:error', {
+            status: response.status,
+            error: errorMessage,
+            attempt: loadAttempts + 1
+          });
+          throw new Error(errorMessage);
+        }
+
         if (!data) {
-          throw new Error('No data received from API');
+          logDynamicPage('loadContent:missing', {
+            attemptsMade: loadAttempts + 1,
+            willRetry: loadAttempts < 2,
+            timestamp: Date.now(),
+            slug: params.slug
+          });
+
+          if (loadAttempts < 2) {
+            const delay = (loadAttempts + 1) * 1000;
+            logDynamicPage('loadContent:retry-scheduled', {
+              attempt: loadAttempts + 1,
+              nextAttemptDelay: delay,
+              timestamp: Date.now()
+            });
+
+            setTimeout(() => {
+              setLoadAttempts(prev => prev + 1);
+            }, delay);
+          } else {
+            logDynamicPage('loadContent:max-attempts-reached', {
+              totalAttempts: loadAttempts + 1,
+              slug: params.slug,
+              timestamp: Date.now()
+            });
+
+            setIsLoading(false);
+            setError('Content not found after multiple attempts. Please check the URL or try generating the content again.');
+          }
+          return;
         }
 
         // Validate required fields
@@ -231,22 +250,33 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
           'ctaDescription'
         ];
 
-        const missingFields = requiredFields.filter(field => {
-          const value = data[field];
-          if (Array.isArray(value)) {
-            return value.length === 0;
-          }
-          return !value;
-        });
-
+        const missingFields = requiredFields.filter(field => !(field in data));
         if (missingFields.length > 0) {
-          throw new Error(`Missing or empty required fields: ${missingFields.join(', ')}`);
+          const errorMessage = `Missing required fields: ${missingFields.join(', ')}`;
+          logDynamicPage('loadContent:validation-error', {
+            error: errorMessage,
+            missingFields,
+            attempt: loadAttempts + 1
+          });
+          throw new Error(errorMessage);
         }
+
+        logDynamicPage('loadContent:success', {
+          id: data.id,
+          sections: {
+            hero: Boolean(data.heroTitle),
+            heroTitleLength: data.heroTitle?.length,
+            features: data.features?.length,
+            pricing: data.pricingTiers?.length,
+            testimonials: data.testimonials?.length,
+            faqs: data.faqs?.length
+          },
+          timestamp: Date.now()
+        });
 
         setContent(data);
         setIsLoading(false);
         setError(null);
-
       } catch (err) {
         logDynamicPage('loadContent:error', {
           error: err instanceof Error ? {
@@ -259,8 +289,17 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
           timestamp: Date.now()
         });
 
-        if (loadAttempts < MAX_RETRIES - 1) {
-          setLoadAttempts(prev => prev + 1);
+        if (loadAttempts < 2) {
+          const delay = (loadAttempts + 1) * 1000;
+          logDynamicPage('loadContent:retry-scheduled', {
+            attempt: loadAttempts + 1,
+            nextAttemptDelay: delay,
+            timestamp: Date.now()
+          });
+
+          setTimeout(() => {
+            setLoadAttempts(prev => prev + 1);
+          }, delay);
         } else {
           setIsLoading(false);
           setError(err instanceof Error ? err.message : 'Failed to load content. Please try refreshing the page.');
@@ -457,7 +496,7 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
                       <rect width="20" height="16" x="2" y="4" rx="2"></rect>
                       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                     </svg>
-                    <span>Join Waitlist</span>
+                    <span>Get Early Access + 30% Off</span>
                   </span>
                 </button>
               </form>
@@ -685,11 +724,11 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
                     </p>
                     <ul className="flex flex-col gap-2">
                       {tier.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center gap-2">
-                          <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="text-blue-500" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                        <li key={featureIndex} className="flex items-start gap-2">
+                          <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="text-blue-500 mt-1 flex-shrink-0 w-4 h-4" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                             <path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"></path>
                           </svg>
-                          <p className="text-default-500">{feature}</p>
+                          <p className="text-default-500 leading-normal">{feature}</p>
                         </li>
                       ))}
                     </ul>
@@ -800,9 +839,13 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
                         />
                         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">{testimonial.name}</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0">{testimonial.role}</p>
+                      <div className="flex flex-col gap-0">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {testimonial.name}
+                        </p>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
+                          {testimonial.role}
+                        </p>
                       </div>
                     </div>
                     <a
@@ -1010,7 +1053,7 @@ export default function DynamicLandingPage({ params }: { params: { slug: string 
                       <rect width="20" height="16" x="2" y="4" rx="2"></rect>
                       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                     </svg>
-                    <span>Join Waitlist</span>
+                    <span>Get Early Access + 30% Off</span>
                   </span>
                 </button>
               </form>

@@ -25,6 +25,7 @@ export const Header = () => {
   const params = useParams();
   const lang = params.lang;
   const pathname = usePathname();
+  const isDynamicPage = pathname.includes('/dynamic-lp/');
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,6 +37,16 @@ export const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      const element = document.getElementById(href.substring(1));
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <header className={cn(
@@ -49,7 +60,7 @@ export const Header = () => {
           {/* Left section */}
           <div className="flex items-center md:gap-x-12 flex-1">
             <Link
-              href="/"
+              href={isDynamicPage ? pathname : "/"}
               aria-label="Landing Page Boilerplate"
               title="Landing Page Boilerplate"
               className="flex items-center space-x-2 group"
@@ -72,9 +83,10 @@ export const Header = () => {
             {links.map((link) => (
               <li key={link.label}>
                 <Link
-                  href={link.isAnchor ? `/${lang === "en" || !lang ? "" : lang}${link.href}` : link.href}
+                  href={link.isAnchor ? link.href : link.href}
                   aria-label={link.label}
                   title={link.label}
+                  onClick={(e) => link.isAnchor && handleAnchorClick(e, link.href)}
                   className={cn(
                     "tracking-wide transition-all duration-200 font-medium hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full",
                     pathname === link.href && "bg-slate-100 dark:bg-slate-800"
@@ -121,8 +133,13 @@ export const Header = () => {
                               href={link.isAnchor ? link.href : link.href}
                               aria-label={link.label}
                               title={link.label}
+                              onClick={(e) => {
+                                if (link.isAnchor) {
+                                  handleAnchorClick(e, link.href);
+                                }
+                                setIsMenuOpen(false);
+                              }}
                               className="font-medium tracking-wide transition-all duration-200 hover:text-primary block py-2"
-                              onClick={() => setIsMenuOpen(false)}
                             >
                               {link.label}
                             </Link>

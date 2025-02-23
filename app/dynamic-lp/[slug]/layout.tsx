@@ -2,6 +2,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { siteConfig } from "@/config/site";
 import { getDynamicLandingPage } from "@/lib/dynamicLandingStore";
 import { Analytics } from "@vercel/analytics/react";
+import { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 import React from "react";
 
@@ -17,32 +18,40 @@ function logDynamicPage(operation: string, details: any) {
   console.log('└─ Environment:', typeof window === 'undefined' ? 'server' : 'client');
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  logDynamicPage('generateMetadata:start', { slug: params.slug });
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  try {
+    logDynamicPage('generateMetadata:start', { slug: params.slug });
 
-  const content = await getDynamicLandingPage(params.slug);
+    const content = await getDynamicLandingPage(params.slug);
 
-  logDynamicPage('generateMetadata:content', {
-    hasContent: Boolean(content),
-    heroTitle: content?.heroTitle,
-    heroDescription: content?.heroDescription?.slice(0, 100)
-  });
+    logDynamicPage('generateMetadata:content', {
+      hasContent: Boolean(content),
+      heroTitle: content?.heroTitle,
+      heroDescription: content?.heroDescription?.slice(0, 100)
+    });
 
-  if (!content) {
-    logDynamicPage('generateMetadata:notFound', { slug: params.slug });
+    if (!content) {
+      logDynamicPage('generateMetadata:notFound', { slug: params.slug });
+      return {
+        title: 'Page Not Found',
+        description: 'The requested landing page could not be found.'
+      };
+    }
+
+    const metadata: Metadata = {
+      title: content.heroTitle.join(' '),
+      description: content.heroDescription
+    };
+
+    logDynamicPage('generateMetadata:complete', { metadata });
+    return metadata;
+  } catch (error) {
+    console.error('Error generating metadata:', error);
     return {
-      title: 'Page Not Found',
-      description: 'The requested landing page could not be found.'
+      title: 'Error',
+      description: 'An error occurred while loading the page.'
     };
   }
-
-  const metadata = {
-    title: content.heroTitle.join(' '),
-    description: content.heroDescription
-  };
-
-  logDynamicPage('generateMetadata:complete', { metadata });
-  return metadata;
 }
 
 export default function DynamicLayout({

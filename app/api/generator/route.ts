@@ -77,10 +77,13 @@ Key Principles:
 6. CLEAR NEXT STEPS: Every section should guide users toward action
 
 Content Guidelines:
-- Hero Title: Exactly 3 parts that tell a story (Problem → Solution → Outcome)
-- Features: Focus on end benefits, use action verbs, be specific to the business
+- Hero Title: Exactly 3 parts, each 1-2 words max, that tell a story (Problem → Solution → Outcome)
+- Features: Each feature must include:
+  * Specific benefit-driven title (e.g., "Instant Rights Protection" not "Protection")
+  * Detailed description of how it solves a specific problem (2-3 sentences)
+  * Measurable outcome or result
 - Pricing: Follow SaaS best practices with exactly 2 tiers (Basic vs Pro), clear value differentiation
-- Testimonials: Create 8 detailed testimonials (350-450 chars) with specific scenarios, results, and emotional impact
+- Testimonials: Create 8 detailed testimonials (800-1000 chars) with specific scenarios, measurable results, and emotional impact
 - FAQs: Address common objections and demonstrate deep industry understanding
 - CTA: Create urgency and emphasize value`,
               },
@@ -307,7 +310,28 @@ Content Guidelines:
                   content.featuresSection?.featuresTitle ||
                   "Features"
                 ),
-                features: features.map((f: string) => String(f)),
+                features: features.map((f: any) => {
+                  pushLog(`Processing feature: ${JSON.stringify(f)}`);
+                  pushLog(`Feature type: ${typeof f}`);
+                  pushLog(`Feature structure: ${Object.keys(f).join(', ')}`);
+
+                  const title = String(f.title || f);
+                  pushLog(`Extracted title: ${title}`);
+
+                  let content;
+                  try {
+                    content = String(f.content || `Leverage the power of ${typeof f === 'string' ? f : title} to transform your business.`);
+                  } catch (err: Error | unknown) {
+                    pushLog(`Error creating content: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                    content = `Leverage the power of this feature to transform your business.`;
+                  }
+
+                  return {
+                    title,
+                    content,
+                    icon: String(f.icon || FEATURE_ICONS[features.indexOf(f) % FEATURE_ICONS.length])
+                  };
+                }),
                 pricingTitle: String(
                   content.pricingTitle ||
                   content.pricing?.pricingTitle ||
@@ -374,11 +398,7 @@ Content Guidelines:
                 heroTitle: normalizedContent.heroTitle,
                 heroDescription: normalizedContent.heroDescription,
                 featuresTitle: normalizedContent.featuresTitle,
-                features: normalizedContent.features.map((feature: string, index: number) => ({
-                  title: feature,
-                  content: `Leverage the power of ${feature.toLowerCase()} to transform your business.`,
-                  icon: FEATURE_ICONS[index % FEATURE_ICONS.length],
-                })),
+                features: normalizedContent.features,  // Use normalized features directly
                 pricingTitle: normalizedContent.pricingTitle,
                 pricingDescription: normalizedContent.pricingDescription,
                 pricingTiers: normalizedContent.pricingTiers,
@@ -400,10 +420,10 @@ Content Guidelines:
                 heroTitle: normalizedContent.heroTitle,
                 heroDescription: normalizedContent.heroDescription,
                 featuresTitle: normalizedContent.featuresTitle,
-                features: normalizedContent.features.map((feature: string, index: number) => ({
-                  title: feature,
-                  content: `Leverage the power of ${feature.toLowerCase()} to transform your business.`,
-                  icon: FEATURE_ICONS[index % FEATURE_ICONS.length],
+                features: normalizedContent.features.map((feature: Feature, index: number) => ({
+                  title: feature.title,
+                  content: feature.content,
+                  icon: feature.icon || FEATURE_ICONS[index % FEATURE_ICONS.length],
                 })),
                 pricingTitle: normalizedContent.pricingTitle,
                 pricingDescription: normalizedContent.pricingDescription,

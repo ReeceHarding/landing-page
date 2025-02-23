@@ -70,122 +70,186 @@ function logStoreOperation(operation: string, details: any) {
 }
 
 /**
- * Validates the content structure and ensures minimum required items
+ * Create a new dynamic landing page record
  */
-function validateContent(content: DynamicLandingPageContent) {
-  // Required array lengths
-  const requiredArrays = {
-    heroTitle: 3,
-    features: 4,
-    pricingTiers: 2,
-    testimonials: 3,
-    faqs: 4
+export async function createDynamicLandingPage(payload: Omit<DynamicLandingPageContent, "id">): Promise<DynamicLandingPageContent> {
+  const startTime = Date.now();
+  const id = uuidv4();
+
+  // Validate required fields first
+  const validationDetails = {
+    hasHeroTitle: Boolean(payload.heroTitle),
+    heroTitleIsArray: Array.isArray(payload.heroTitle),
+    heroTitleLength: Array.isArray(payload.heroTitle) ? payload.heroTitle.length : 0,
+    hasHeroDescription: Boolean(payload.heroDescription),
+    heroDescriptionLength: payload.heroDescription?.length || 0,
+    allFieldsPresent: Boolean(
+      payload.heroTitle &&
+      payload.heroDescription &&
+      payload.featuresTitle &&
+      payload.features &&
+      payload.pricingTitle &&
+      payload.pricingDescription &&
+      payload.pricingTiers &&
+      payload.testimonialsTitle &&
+      payload.testimonials &&
+      payload.faqTitle &&
+      payload.faqs &&
+      payload.ctaTitle &&
+      payload.ctaDescription
+    )
   };
 
-  // Validate array lengths
-  for (const [field, minLength] of Object.entries(requiredArrays)) {
-    const array = content[field as keyof DynamicLandingPageContent] as any[];
-    if (!Array.isArray(array)) {
-      throw new Error(`${field} must be an array`);
-    }
-    if (array.length < minLength) {
-      throw new Error(`${field} must have at least ${minLength} items, but has ${array.length}`);
-    }
-  }
-
-  // Validate required string fields are not empty
-  const requiredStrings = [
-    'heroDescription',
-    'featuresTitle',
-    'pricingTitle',
-    'pricingDescription',
-    'testimonialsTitle',
-    'faqTitle',
-    'ctaTitle',
-    'ctaDescription'
-  ];
-
-  for (const field of requiredStrings) {
-    const value = content[field as keyof DynamicLandingPageContent] as string;
-    if (!value || value.trim().length === 0) {
-      throw new Error(`${field} cannot be empty`);
-    }
-  }
-
-  // Validate pricing tiers structure
-  content.pricingTiers.forEach((tier, index) => {
-    if (!tier.name || tier.name.trim().length === 0) {
-      throw new Error(`Pricing tier ${index} must have a name`);
-    }
-    if (!tier.price || tier.price.trim().length === 0) {
-      throw new Error(`Pricing tier ${index} must have a price`);
-    }
-    if (!tier.description || tier.description.trim().length === 0) {
-      throw new Error(`Pricing tier ${index} must have a description`);
-    }
-    if (!Array.isArray(tier.features) || tier.features.length === 0) {
-      throw new Error(`Pricing tier ${index} must have at least one feature`);
-    }
-  });
-
-  // Validate testimonials structure
-  content.testimonials.forEach((testimonial, index) => {
-    if (!testimonial.name || testimonial.name.trim().length === 0) {
-      throw new Error(`Testimonial ${index} must have a name`);
-    }
-    if (!testimonial.role || testimonial.role.trim().length === 0) {
-      throw new Error(`Testimonial ${index} must have a role`);
-    }
-    if (!testimonial.content || testimonial.content.trim().length === 0) {
-      throw new Error(`Testimonial ${index} must have content`);
-    }
-  });
-
-  // Validate FAQs structure
-  content.faqs.forEach((faq, index) => {
-    if (!faq.question || faq.question.trim().length === 0) {
-      throw new Error(`FAQ ${index} must have a question`);
-    }
-    if (!faq.answer || faq.answer.trim().length === 0) {
-      throw new Error(`FAQ ${index} must have an answer`);
-    }
-  });
-
-  return content;
-}
-
-/**
- * Creates a new dynamic landing page
- */
-export async function createDynamicLandingPage(data: Partial<DynamicLandingPageContent>): Promise<DynamicLandingPageContent> {
-  const id = data.id || uuidv4();
-
-  // Create the content with all required fields
-  const content: DynamicLandingPageContent = {
+  logStoreOperation("createDynamicLandingPage:validation", {
     id,
-    logoUrl: data.logoUrl || null,
-    heroTitle: data.heroTitle || [],
-    heroDescription: data.heroDescription || '',
-    featuresTitle: data.featuresTitle || '',
-    features: data.features || [],
-    pricingTitle: data.pricingTitle || '',
-    pricingDescription: data.pricingDescription || '',
-    pricingTiers: data.pricingTiers || [],
-    testimonialsTitle: data.testimonialsTitle || '',
-    testimonials: data.testimonials || [],
-    faqTitle: data.faqTitle || '',
-    faqs: data.faqs || [],
-    ctaTitle: data.ctaTitle || '',
-    ctaDescription: data.ctaDescription || ''
-  };
+    ...validationDetails,
+    timestamp: Date.now()
+  });
 
-  // Validate content before saving
-  validateContent(content);
+  const record: DynamicLandingPageContent = { id, ...payload };
 
-  // Save to Redis
-  await redis.set(`${REDIS_KEY_PREFIX}${id}`, JSON.stringify(content));
+  logStoreOperation("createDynamicLandingPage:init", {
+    id,
+    payloadKeys: Object.keys(payload),
+    payloadHeroTitle: payload.heroTitle,
+    payloadHeroTitleType: typeof payload.heroTitle,
+    payloadHeroDescription: payload.heroDescription,
+    hasRequiredFields: Boolean(payload.heroTitle && payload.heroDescription &&
+      Array.isArray(payload.heroTitle) && payload.heroTitle.length === 3),
+    validationDetails,
+    contentSizes: {
+      heroTitle: JSON.stringify(payload.heroTitle).length,
+      heroDescription: payload.heroDescription?.length || 0,
+      features: payload.features?.length || 0,
+      pricingTiers: payload.pricingTiers?.length || 0,
+      testimonials: payload.testimonials?.length || 0,
+      faqs: payload.faqs?.length || 0
+    },
+    timestamp: Date.now()
+  });
 
-  return content;
+  try {
+    // Validate heroTitle is an array before storing
+    if (!Array.isArray(payload.heroTitle)) {
+      logStoreOperation("createDynamicLandingPage:validation-error", {
+        id,
+        error: "heroTitle must be an array",
+        receivedType: typeof payload.heroTitle,
+        receivedValue: payload.heroTitle,
+        validationTime: Date.now() - startTime
+      });
+      throw new Error("heroTitle must be an array");
+    }
+
+    // Validate heroTitle length
+    if (payload.heroTitle.length !== 3) {
+      logStoreOperation("createDynamicLandingPage:validation-error", {
+        id,
+        error: "heroTitle must have exactly 3 items",
+        receivedLength: payload.heroTitle.length,
+        receivedValue: payload.heroTitle,
+        validationTime: Date.now() - startTime
+      });
+      throw new Error("heroTitle must have exactly 3 items");
+    }
+
+    // Validate heroDescription
+    if (!payload.heroDescription?.trim()) {
+      logStoreOperation("createDynamicLandingPage:validation-error", {
+        id,
+        error: "heroDescription is required",
+        receivedValue: payload.heroDescription,
+        validationTime: Date.now() - startTime
+      });
+      throw new Error("heroDescription is required");
+    }
+
+    // Pre-serialization validation
+    logStoreOperation("createDynamicLandingPage:pre-serialize", {
+      id,
+      recordType: typeof record,
+      recordKeys: Object.keys(record),
+      recordSize: JSON.stringify(record).length,
+      recordValidation: {
+        heroTitle: record.heroTitle,
+        heroTitleLength: record.heroTitle.length,
+        heroDescription: record.heroDescription,
+        hasRequiredFields: Boolean(record.heroTitle && record.heroDescription)
+      },
+      serializationTime: Date.now() - startTime
+    });
+
+    // Explicitly stringify the record for Redis storage
+    const serializedRecord = JSON.stringify(record);
+
+    logStoreOperation("createDynamicLandingPage:pre-store", {
+      id,
+      redisKey: `${REDIS_KEY_PREFIX}${id}`,
+      serializedRecordPreview: serializedRecord.slice(0, 100) + '...',
+      recordType: typeof record,
+      serializedType: typeof serializedRecord,
+      recordHeroTitle: record.heroTitle,
+      recordHeroTitleType: typeof record.heroTitle,
+      serializedSize: serializedRecord.length,
+      compressionRatio: serializedRecord.length / JSON.stringify(record).length
+    });
+
+    // Store in Redis with expiration
+    const storeStartTime = Date.now();
+    await redis.set(
+      `${REDIS_KEY_PREFIX}${id}`,
+      serializedRecord,
+      {
+        ex: 60 * 60 * 24 * 30 // 30 days expiry
+      }
+    );
+    const storeEndTime = Date.now();
+
+    logStoreOperation("createDynamicLandingPage:store-complete", {
+      id,
+      storeTime: storeEndTime - storeStartTime,
+      totalTime: storeEndTime - startTime
+    });
+
+    // Verify the data was stored correctly
+    const verificationStartTime = Date.now();
+    const verificationRead = await redis.get(`${REDIS_KEY_PREFIX}${id}`);
+    const parsedVerification = verificationRead ?
+      (typeof verificationRead === 'string' ? JSON.parse(verificationRead) : verificationRead)
+      : null;
+
+    logStoreOperation("createDynamicLandingPage:verify", {
+      id,
+      stored: Boolean(verificationRead),
+      verifiedDataType: typeof verificationRead,
+      verifiedHeroTitle: parsedVerification?.heroTitle,
+      verifiedHeroTitleType: parsedVerification ? typeof parsedVerification.heroTitle : 'N/A',
+      verifiedDataPreview: verificationRead ?
+        (typeof verificationRead === 'string' ? verificationRead.slice(0, 100) : JSON.stringify(verificationRead).slice(0, 100)) + '...' : null,
+      matches: verificationRead === serializedRecord,
+      matchReason: verificationRead === serializedRecord ? 'exact' :
+        !verificationRead ? 'no_data' :
+          typeof verificationRead !== typeof serializedRecord ? 'type_mismatch' :
+            'content_mismatch',
+      verificationTime: Date.now() - verificationStartTime,
+      totalTime: Date.now() - startTime
+    });
+
+    return record;
+  } catch (err) {
+    logStoreOperation("createDynamicLandingPage:error", {
+      error: err instanceof Error ? err.message : 'Unknown error',
+      id,
+      stack: err instanceof Error ? err.stack : undefined,
+      context: {
+        timestamp: Date.now(),
+        totalTime: Date.now() - startTime,
+        memoryUsage: process.memoryUsage(),
+        errorType: err?.constructor?.name
+      }
+    });
+    throw err;
+  }
 }
 
 /**
