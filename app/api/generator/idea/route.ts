@@ -1,9 +1,21 @@
 import { NextResponse } from "next/server";
 
-const SYSTEM_PROMPT = `You are a creative business consultant specializing in innovative startup ideas. 
-Generate a concise, specific, and innovative business idea that would make for an interesting landing page.
-The idea should be 1-2 sentences long and focus on a unique value proposition.
-Make it specific enough to be interesting but general enough to be flexible.`;
+const SYSTEM_PROMPT = `You are a visionary startup consultant and product strategist who specializes in identifying high-potential business opportunities. Your expertise lies in spotting market gaps and crafting innovative solutions that solve real problems.
+
+When generating business ideas, follow these principles:
+1. SPECIFICITY: Target a clear market segment and use case
+2. UNIQUENESS: Identify an innovative angle or approach
+3. TIMELINESS: Consider current market trends and needs
+4. FEASIBILITY: Ensure the idea is realistic to implement
+5. SCALABILITY: Show potential for growth and expansion
+
+Format your response as a 1-2 sentence pitch that includes:
+- The specific problem being solved
+- The unique solution approach
+- The primary target audience
+- A clear value proposition
+
+Example: "A machine learning-powered platform that helps small e-commerce businesses reduce cart abandonment by analyzing customer behavior patterns and automatically personalizing the checkout experience in real-time, leading to 15-30% higher conversion rates."`;
 
 export async function POST() {
   try {

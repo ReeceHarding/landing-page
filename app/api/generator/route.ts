@@ -66,45 +66,75 @@ export async function POST(req: NextRequest) {
             const messages: ChatCompletionMessageParam[] = [
               {
                 role: "system",
-                content: `You are an expert marketing copywriter and business strategist. Analyze the business idea and create compelling, perfectly formatted content for a landing page. Focus on clear value propositions and benefits.
+                content: `You are an expert marketing copywriter, UX designer, and business strategist with deep expertise in crafting high-converting landing pages. Your role is to analyze business ideas and create compelling, perfectly formatted content that drives action.
 
-Key guidelines:
-- Hero title should be exactly 3 parts for animation
-- Features should be specific and actionable
-- Pricing tiers should follow SaaS best practices
-- Testimonials should feel authentic and focus on benefits
-- FAQs should address common objections
-- All content should maintain consistent tone and style`,
+Key Principles:
+1. SPECIFICITY: Every piece of content must be specific to the business idea, not generic marketing speak
+2. AUTHENTICITY: Write in a natural, conversational tone that builds trust
+3. BENEFITS-FIRST: Lead with clear, tangible benefits rather than features
+4. SOCIAL PROOF: Create detailed, believable testimonials based on real use cases
+5. OBJECTION HANDLING: Address real concerns in FAQs
+6. CLEAR NEXT STEPS: Every section should guide users toward action
+
+Content Guidelines:
+- Hero Title: Exactly 3 parts that tell a story (Problem → Solution → Outcome)
+- Features: Focus on end benefits, use action verbs, be specific to the business
+- Pricing: Follow SaaS best practices with exactly 2 tiers (Basic vs Pro), clear value differentiation
+- Testimonials: Create 8 detailed testimonials (350-450 chars) with specific scenarios, results, and emotional impact
+- FAQs: Address common objections and demonstrate deep industry understanding
+- CTA: Create urgency and emphasize value`,
               },
               {
                 role: "user",
                 content: `Create a complete landing page for this business idea: "${idea}". Return a JSON object with the following sections:
 
-1. Hero section (formatted exactly for animation):
-- heroTitle: Array of exactly 3 strings
-- heroDescription: 1-2 sentence
+1. Hero Section (must follow this format exactly):
+- heroTitle: Array of exactly 3 strings that tell a story [Problem → Solution → Outcome]
+- heroDescription: Clear value proposition in 1-2 sentences, emphasizing unique benefits
 
-2. Features section:
-- featuresTitle
-- features: Array of 6 strings
+2. Features Section:
+- featuresTitle: Action-oriented title that emphasizes transformation
+- features: Array of exactly 6 objects with:
+  * title: Start with action verbs
+  * content: Focus on end benefits, not technical features
+  * icon: One of: ⚡️ 🛠️ 🔒 📱 🌐 ✨
 
-3. Pricing section:
-- pricingTitle
-- pricingDescription
-- pricingTiers: 3 objects with name, price, description, and array of features
+3. Pricing Section:
+- pricingTitle: Value-focused title
+- pricingDescription: Emphasize flexibility and value
+- pricingTiers: Array of exactly 2 objects:
+  * Basic tier: For individuals/small teams
+  * Pro tier: For growing businesses
+  Each with:
+  * name: Clear tier name
+  * price: Price with billing frequency
+  * description: Value proposition
+  * features: Array of 4-6 key benefits
 
-4. Testimonials section:
-- testimonialsTitle
-- testimonials: Array of 3 objects with { name, role, content }
+4. Testimonials Section:
+- testimonialsTitle: Trust-building title
+- testimonials: Array of 8 objects with:
+  * name: Realistic full name
+  * role: Specific job title
+  * content: 350-450 character story with:
+    - Specific problem they faced
+    - How the solution helped
+    - Measurable results
+    - Emotional impact
 
-5. FAQ section:
-- faqTitle
-- faqs: Array of 6 objects { question, answer }
+5. FAQ Section:
+- faqTitle: Clear, inviting title
+- faqs: Array of 6 objects addressing:
+  * Common objections
+  * Technical questions
+  * Implementation concerns
+  * ROI/results questions
+  * Security/privacy
+  * Support/service
 
-6. CTA section:
-- ctaTitle
-- ctaDescription
-`,
+6. CTA Section:
+- ctaTitle: Action-oriented title with clear value
+- ctaDescription: Urgency-driven description with social proof element`,
               },
             ];
 

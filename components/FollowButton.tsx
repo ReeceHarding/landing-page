@@ -1,7 +1,7 @@
 "use client";
 
-import { Icon } from "@iconify/react";
 import { Button, Link } from "@nextui-org/react";
+import { ArrowRight } from "lucide-react";
 
 export default function FollowButton({
   name,
@@ -19,10 +19,9 @@ export default function FollowButton({
       className="group relative h-9 overflow-hidden bg-transparent text-small font-normal"
       color="default"
       endContent={
-        <Icon
-          className="flex-none outline-none transition-transform group-data-[hover=true]:translate-x-0.5 [&>path]:stroke-[2]"
-          icon="solar:arrow-right-linear"
-          width={16}
+        <ArrowRight
+          className="flex-none outline-none transition-transform group-data-[hover=true]:translate-x-0.5"
+          size={16}
         />
       }
       href={href}
