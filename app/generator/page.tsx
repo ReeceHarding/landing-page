@@ -107,7 +107,11 @@ export default function GeneratorPage() {
                     dynamic: json.dynamicId
                   });
                   addLog("✨ Landing page generated successfully!");
-                  addLog("You can now view either the preview or dynamic version.");
+                  addLog("Redirecting to dynamic version...");
+                  // Automatically redirect to the dynamic version
+                  if (json.dynamicId) {
+                    router.push(`/dynamic-lp/${json.dynamicId}`);
+                  }
                 }
               } catch (err) {
                 addLog(`Error parsing chunk: ${err}`);

@@ -323,11 +323,24 @@ export async function getDynamicLandingPage(id: string): Promise<DynamicLandingP
 
     const data = await redis.get(redisKey);
 
-    // Log the raw data for debugging
+    // Log the raw data structure
     logStoreOperation("getDynamicLandingPage:raw", {
       id,
       hasData: Boolean(data),
       dataType: typeof data,
+      contentStructure: data ? {
+        hasHeroTitle: Boolean(data.heroTitle),
+        heroTitleType: typeof data.heroTitle,
+        heroTitleIsArray: Array.isArray(data.heroTitle),
+        hasFeatures: Boolean(data.features),
+        featuresCount: Array.isArray(data.features) ? data.features.length : 0,
+        hasPricingTiers: Boolean(data.pricingTiers),
+        pricingTiersCount: Array.isArray(data.pricingTiers) ? data.pricingTiers.length : 0,
+        hasTestimonials: Boolean(data.testimonials),
+        testimonialsCount: Array.isArray(data.testimonials) ? data.testimonials.length : 0,
+        hasFaqs: Boolean(data.faqs),
+        faqsCount: Array.isArray(data.faqs) ? data.faqs.length : 0
+      } : null,
       timestamp: Date.now()
     });
 
@@ -341,6 +354,48 @@ export async function getDynamicLandingPage(id: string): Promise<DynamicLandingP
 
     // Parse the data if it's a string
     const content = typeof data === 'string' ? JSON.parse(data) : data;
+
+    // Add detailed content validation
+    const contentValidation = {
+      heroSection: {
+        hasTitle: Boolean(content.heroTitle),
+        titleIsArray: Array.isArray(content.heroTitle),
+        titleLength: Array.isArray(content.heroTitle) ? content.heroTitle.length : 0,
+        hasDescription: Boolean(content.heroDescription)
+      },
+      features: {
+        hasTitle: Boolean(content.featuresTitle),
+        hasFeatures: Boolean(content.features),
+        featuresCount: Array.isArray(content.features) ? content.features.length : 0,
+        featuresValid: Array.isArray(content.features) && content.features.every((f: { title: string; content: string; icon: string }) =>
+          f.title && typeof f.title === 'string' &&
+          f.content && typeof f.content === 'string' &&
+          f.icon && typeof f.icon === 'string'
+        )
+      },
+      pricing: {
+        hasTitle: Boolean(content.pricingTitle),
+        hasDescription: Boolean(content.pricingDescription),
+        hasTiers: Boolean(content.pricingTiers),
+        tiersCount: Array.isArray(content.pricingTiers) ? content.pricingTiers.length : 0
+      },
+      testimonials: {
+        hasTitle: Boolean(content.testimonialsTitle),
+        hasTestimonials: Boolean(content.testimonials),
+        count: Array.isArray(content.testimonials) ? content.testimonials.length : 0
+      },
+      faqs: {
+        hasTitle: Boolean(content.faqTitle),
+        hasFaqs: Boolean(content.faqs),
+        count: Array.isArray(content.faqs) ? content.faqs.length : 0
+      }
+    };
+
+    logStoreOperation("getDynamicLandingPage:validation", {
+      id,
+      contentValidation,
+      timestamp: Date.now()
+    });
 
     // Add content completeness check
     const completeness = validateContentCompleteness(content);

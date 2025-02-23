@@ -301,93 +301,81 @@ Content Guidelines:
                   content.hero?.heroDescription ||
                   content.Hero?.heroDescription ||
                   content.heroSection?.heroDescription ||
-                  ""
+                  "Transform your business with our solution"
                 ),
                 featuresTitle: String(
                   content.featuresTitle ||
-                  content.features?.featuresTitle ||
+                  content.features?.title ||
                   content.Features?.title ||
-                  content.featuresSection?.featuresTitle ||
+                  content.featuresSection?.title ||
                   "Features"
                 ),
                 features: features.map((f: any) => {
-                  pushLog(`Processing feature: ${JSON.stringify(f)}`);
-                  pushLog(`Feature type: ${typeof f}`);
-                  pushLog(`Feature structure: ${Object.keys(f).join(', ')}`);
-
                   const title = String(f.title || f);
-                  pushLog(`Extracted title: ${title}`);
-
-                  let content;
-                  try {
-                    content = String(f.content || `Leverage the power of ${typeof f === 'string' ? f : title} to transform your business.`);
-                  } catch (err: Error | unknown) {
-                    pushLog(`Error creating content: ${err instanceof Error ? err.message : 'Unknown error'}`);
-                    content = `Leverage the power of this feature to transform your business.`;
-                  }
-
+                  const featureContent = String(f.content || f.description || `Leverage the power of ${title} to transform your business.`);
                   return {
                     title,
-                    content,
+                    content: featureContent,
                     icon: String(f.icon || FEATURE_ICONS[features.indexOf(f) % FEATURE_ICONS.length])
                   };
                 }),
                 pricingTitle: String(
                   content.pricingTitle ||
-                  content.pricing?.pricingTitle ||
+                  content.pricing?.title ||
                   content.Pricing?.title ||
-                  content.pricingSection?.pricingTitle ||
+                  content.pricingSection?.title ||
                   "Pricing"
                 ),
                 pricingDescription: String(
                   content.pricingDescription ||
-                  content.pricing?.pricingDescription ||
+                  content.pricing?.description ||
                   content.Pricing?.description ||
-                  content.pricingSection?.pricingDescription ||
-                  ""
+                  content.pricingSection?.description ||
+                  "Choose the plan that's right for you"
                 ),
-                pricingTiers: pricingTiers.map((tier: PricingTier) => ({
-                  name: String(tier.name),
-                  price: String(tier.price),
-                  description: String(tier.description),
-                  features: Array.isArray(tier.features) ? tier.features.map((f: string) => String(f)) : []
+                pricingTiers: (pricingTiers || []).map((tier: any) => ({
+                  name: String(tier.name || tier.title || "Basic"),
+                  price: String(tier.price || "$0"),
+                  description: String(tier.description || "Get started with our basic plan"),
+                  features: Array.isArray(tier.features) ? tier.features.map((f: any) => String(f)) : []
                 })),
                 testimonialsTitle: String(
                   content.testimonialsTitle ||
-                  content.testimonials?.testimonialsTitle ||
+                  content.testimonials?.title ||
                   content.Testimonials?.title ||
-                  content.testimonialsSection?.testimonialsTitle ||
-                  "Testimonials"
+                  content.testimonialsSection?.title ||
+                  "What Our Customers Say"
                 ),
-                testimonials: testimonials.map((t: Testimonial) => ({
-                  name: String(t.name),
-                  role: String(t.role),
-                  content: String(t.content).trim()
+                testimonials: (testimonials || []).map((t: any) => ({
+                  name: String(t.name || "Happy Customer"),
+                  role: String(t.role || t.position || "Satisfied User"),
+                  content: String(t.content || t.testimonial || "This product has transformed our business.").trim(),
+                  avatar: null
                 })),
                 faqTitle: String(
                   content.faqTitle ||
-                  content.faq?.faqTitle ||
+                  content.faq?.title ||
                   content.FAQ?.title ||
-                  content.faqSection?.faqTitle ||
-                  "FAQ"
+                  content.faqSection?.title ||
+                  "Frequently Asked Questions"
                 ),
-                faqs: faqs.map((faq: FAQ) => ({
-                  question: String(faq.question).trim(),
-                  answer: String(faq.answer).trim()
+                faqs: (faqs || []).map((faq: any) => ({
+                  question: String(faq.question || "How can we help?").trim(),
+                  answer: String(faq.answer || "We're here to help you succeed.").trim()
                 })),
                 ctaTitle: String(
                   content.ctaTitle ||
-                  content.cta?.ctaTitle ||
+                  content.cta?.title ||
                   content.CTA?.title ||
-                  content.ctaSection?.ctaTitle ||
-                  "Get Started"
+                  content.ctaSection?.title ||
+                  "Get Started Today"
                 ),
                 ctaDescription: String(
                   content.ctaDescription ||
-                  content.cta?.ctaDescription ||
+                  content.cta?.description ||
                   content.CTA?.description ||
-                  content.ctaSection?.ctaDescription ||
-                  "Join us today!"
+                  content.ctaSection?.description ||
+                  "Join thousands of satisfied customers"
                 )
               };
 
