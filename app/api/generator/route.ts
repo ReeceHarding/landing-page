@@ -265,19 +265,57 @@ Content Guidelines:
                 Array.isArray(content.pricing?.pricingTiers) ? content.pricing.pricingTiers :
                   Array.isArray(content.Pricing?.pricingTiers) ? content.Pricing.pricingTiers :
                     Array.isArray(content.pricingSection?.pricingTiers) ? content.pricingSection.pricingTiers :
-                      [];
+                      // Default pricing tiers if none found
+                      [{
+                        name: "Basic",
+                        price: "$29/month",
+                        description: "Perfect for getting started",
+                        features: ["Core features", "Basic support", "Up to 1000 users", "1 project"]
+                      },
+                      {
+                        name: "Pro",
+                        price: "$99/month",
+                        description: "For growing businesses",
+                        features: ["All Basic features", "Priority support", "Unlimited users", "Unlimited projects"]
+                      }];
 
               const testimonials = Array.isArray(content.testimonials) ? content.testimonials :
                 Array.isArray(content.testimonials?.testimonials) ? content.testimonials.testimonials :
                   Array.isArray(content.Testimonials?.testimonials) ? content.Testimonials.testimonials :
                     Array.isArray(content.testimonialsSection?.testimonials) ? content.testimonialsSection.testimonials :
-                      [];
+                      // Default testimonials if none found
+                      Array.from({ length: 8 }, (_, i) => ({
+                        name: `Customer ${i + 1}`,
+                        role: "Satisfied User",
+                        content: "This product has transformed how we work. The implementation was smooth, and the results were immediate. Highly recommended for any business looking to improve their operations.",
+                        avatar: null
+                      }));
 
               const faqs = Array.isArray(content.faqs) ? content.faqs :
                 Array.isArray(content.faq?.faqs) ? content.faq.faqs :
                   Array.isArray(content.FAQ?.faqs) ? content.FAQ.faqs :
                     Array.isArray(content.faqSection?.faqs) ? content.faqSection.faqs :
-                      [];
+                      // Default FAQs if none found
+                      Array.from({ length: 6 }, (_, i) => ({
+                        question: `Common Question ${i + 1}?`,
+                        answer: "We understand this is an important consideration. Our solution is designed to address this exact need, providing you with the tools and support necessary for success."
+                      }));
+
+              // Ensure features array has exactly 6 items
+              const normalizedFeatures = features.length > 0 ? features : Array.from({ length: 6 }, (_, i) => ({
+                title: `Feature ${i + 1}`,
+                content: "This feature helps you achieve your goals more efficiently.",
+                icon: FEATURE_ICONS[i % FEATURE_ICONS.length]
+              }));
+
+              if (normalizedFeatures.length < 6) {
+                const additionalFeatures = Array.from({ length: 6 - normalizedFeatures.length }, (_, i) => ({
+                  title: `Additional Feature ${i + 1}`,
+                  content: "This feature enhances your experience and productivity.",
+                  icon: FEATURE_ICONS[(normalizedFeatures.length + i) % FEATURE_ICONS.length]
+                }));
+                normalizedFeatures.push(...additionalFeatures);
+              }
 
               // Log normalized data
               pushLog(`Normalized data: ${JSON.stringify({
@@ -310,13 +348,13 @@ Content Guidelines:
                   content.featuresSection?.title ||
                   "Features"
                 ),
-                features: features.map((f: any) => {
+                features: normalizedFeatures.slice(0, 6).map((f: any) => {
                   const title = String(f.title || f);
                   const featureContent = String(f.content || f.description || `Leverage the power of ${title} to transform your business.`);
                   return {
                     title,
                     content: featureContent,
-                    icon: String(f.icon || FEATURE_ICONS[features.indexOf(f) % FEATURE_ICONS.length])
+                    icon: String(f.icon || FEATURE_ICONS[normalizedFeatures.indexOf(f) % FEATURE_ICONS.length])
                   };
                 }),
                 pricingTitle: String(
