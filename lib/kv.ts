@@ -1,12 +1,24 @@
 import { Redis } from '@upstash/redis';
 import { kv } from '@vercel/kv';
 
+interface RedisClientInterface {
+  get: (key: string) => Promise<any>;
+  set: (key: string, value: any, options?: any) => Promise<any>;
+}
+
+// Create a singleton instance
+let redisClient: RedisClientInterface | null = null;
+
 // Configure Redis client with better error handling
-const getRedisClient = () => {
+export function getRedisClient(): RedisClientInterface {
+  if (redisClient) {
+    return redisClient;
+  }
+
   // Use Vercel KV if credentials are provided
   if (process.env.KV_URL || process.env.KV_REST_API_URL || process.env.KV_REST_API_TOKEN) {
     console.log('Using Vercel KV for Redis storage');
-    return {
+    redisClient = {
       get: async (key: string) => {
         try {
           return await kv.get(key);
@@ -24,6 +36,7 @@ const getRedisClient = () => {
         }
       }
     };
+    return redisClient;
   }
 
   // Fallback to Upstash Redis for development or alternative deployment
@@ -34,7 +47,7 @@ const getRedisClient = () => {
       token: process.env.UPSTASH_REDIS_REST_TOKEN,
     });
 
-    return {
+    redisClient = {
       get: async (key: string) => {
         try {
           return await client.get(key);
@@ -52,6 +65,7 @@ const getRedisClient = () => {
         }
       }
     };
+    return redisClient;
   }
 
   // Development fallback with warning
@@ -61,7 +75,7 @@ const getRedisClient = () => {
     token: 'development_token',
   });
 
-  return {
+  redisClient = {
     get: async (key: string) => {
       try {
         return await fallbackClient.get(key);
@@ -79,10 +93,11 @@ const getRedisClient = () => {
       }
     }
   };
-};
+  return redisClient;
+}
 
-// Export type for better TypeScript support
+// Export the type
 export type RedisClient = ReturnType<typeof getRedisClient>;
 
-// Initialize and export the Redis client
+// Export a function to get the Redis client
 export const redis = getRedisClient(); 

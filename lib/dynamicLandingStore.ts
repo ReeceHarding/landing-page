@@ -67,6 +67,45 @@ function logStoreOperation(operation: string, details: any) {
       dataType: details.dataType
     });
   }
+
+  // Add content completeness logging
+  if (details?.contentCompleteness) {
+    console.log('Content Completeness:', details.contentCompleteness);
+  }
+}
+
+function validateContentCompleteness(content: DynamicLandingPageContent) {
+  return {
+    hero: {
+      title: content.heroTitle?.length > 0,
+      description: Boolean(content.heroDescription),
+    },
+    features: {
+      title: Boolean(content.featuresTitle),
+      count: content.features?.length || 0,
+      complete: content.features?.every(f => f.title && f.content && f.icon),
+    },
+    pricing: {
+      title: Boolean(content.pricingTitle),
+      description: Boolean(content.pricingDescription),
+      tiersCount: content.pricingTiers?.length || 0,
+      complete: content.pricingTiers?.every(p => p.name && p.price && p.description && p.features?.length > 0),
+    },
+    testimonials: {
+      title: Boolean(content.testimonialsTitle),
+      count: content.testimonials?.length || 0,
+      complete: content.testimonials?.every(t => t.name && t.role && t.content),
+    },
+    faqs: {
+      title: Boolean(content.faqTitle),
+      count: content.faqs?.length || 0,
+      complete: content.faqs?.every(f => f.question && f.answer),
+    },
+    cta: {
+      title: Boolean(content.ctaTitle),
+      description: Boolean(content.ctaDescription),
+    },
+  };
 }
 
 /**
@@ -302,6 +341,14 @@ export async function getDynamicLandingPage(id: string): Promise<DynamicLandingP
 
     // Parse the data if it's a string
     const content = typeof data === 'string' ? JSON.parse(data) : data;
+
+    // Add content completeness check
+    const completeness = validateContentCompleteness(content);
+    logStoreOperation("getDynamicLandingPage:completeness", {
+      id,
+      contentCompleteness: completeness,
+      timestamp: Date.now()
+    });
 
     // Validate the parsed content
     if (!content || typeof content !== 'object') {
